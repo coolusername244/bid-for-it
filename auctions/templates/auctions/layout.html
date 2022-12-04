@@ -8,56 +8,7 @@
         <link href="{% static 'auctions/styles.css' %}" rel="stylesheet">
     </head>
     <body>
-        <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-            <div class="container-fluid">
-                <span class="navbar-brand">CS50 Auctions</span>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarText" aria-controls="navbarText" aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="collapse navbar-collapse" id="navbarText">
-                    <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                        <li class="nav-item">
-                            <a class="nav-link" href="{% url 'index' %}">Active Listing</a>
-                        </li>
-                        <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                Shop By Category
-                            </a>
-                            <ul class="dropdown-menu">
-                                <li>
-                                    <a class="dropdown-item" href="#">TODO - Categories</a>
-                                </li>
-                            </ul>
-                        </li>
-                        {% if user.is_authenticated %}
-                            <li class="nav-item">
-                                <a class="nav-link" href="#">Wishlist</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" href="#">Sell Something</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" href="{% url 'logout' %}">Log Out</a>
-                            </li>
-                        {% else %}
-                            <li class="nav-item">
-                                <a class="nav-link" href="{% url 'login' %}">Log In</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" href="{% url 'register' %}">Register</a>
-                            </li>
-                        {% endif %}                       
-                    </ul>
-                    <span class="navbar-text">
-                        {% if user.is_authenticated %}
-                            Signed in as <strong>{{ user.username }}</strong>
-                        {% else %}
-                            Not Signed In
-                        {% endif %}
-                    </span>
-                </div>
-            </div>
-        </nav>
+        {% include "auctions/navbar.html" %}
         <main class="container-fluid">
             {% block body %}
             {% endblock %}

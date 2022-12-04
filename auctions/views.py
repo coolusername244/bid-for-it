@@ -10,6 +10,12 @@ from .models import User
 def index(request):
     return render(request, "auctions/index.html")
 
+def create(request):
+    return render(request, "auctions/create.html")
+
+def wishlist(request):
+    return render(request, "auctions/wishlist.html")
+
 
 def login_view(request):
     if request.method == "POST":
