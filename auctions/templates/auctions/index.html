@@ -2,6 +2,14 @@
 
 {% block body %}
     <h2>Active Listings</h2>
-
-    TODO
+    {% for listing in listings %}
+        {{ listing.title }} <br>
+        {{ listing.subtitle }} <br>
+        {{ listing.description }} <br>
+        {{ listing.price }} <br>
+        {{ listing.category.friendly_name }} <br>
+        <img src="{{ listing.image_url }}" alt="{{ listing.title }}" style="height: 10rem"> <br>
+        {{ listing.created }} <br>
+        {{ listing.user }} <br>
+    {% endfor %}
 {% endblock %}
