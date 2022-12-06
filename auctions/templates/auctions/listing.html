@@ -14,15 +14,11 @@
                 <p class="card-text"><i>{{ listing.subtitle }}</i></p>
                 <p class="card-text">Current Price: <strong>${{ listing.price }}</strong></p>
                 <p class="card-text"><small class="text-muted">Uploaded: {{ listing.created }}</small></p>
-            </div>
-        </div>
-        <div class="row text-center">
-            <div class="col-12 mb-3">
                 {% if user.is_authenticated %}
                     {% if listing in wishlist %}
-                        <a href="#" class="btn btn-secondary">Remove From Wishlist <i class="bi bi-star-fill"></i></a>
+                        <a href="{% url 'remove_from_wishlist' listing.id %}" class="btn btn-secondary">Remove From Wishlist <i class="bi bi-star-fill"></i></a>
                     {% else %}
-                        <a href="#" class="btn btn-secondary">Add to Wishlist <i class="bi bi-star"></i></a>
+                        <a href="{% url 'add_to_wishlist' listing.id %}" class="btn btn-secondary">Add to Wishlist <i class="bi bi-star"></i></a>
                     {% endif %}
                 {% endif %}
             </div>

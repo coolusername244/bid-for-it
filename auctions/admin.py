@@ -10,12 +10,14 @@ class UserAdmin(admin.ModelAdmin):
         "username"
     )
 
+
 class ConditionAdmin(admin.ModelAdmin):
     list_display = (
         "id",
         "name",
         "friendly_name",
     )
+
 
 class CategoryAdmin(admin.ModelAdmin):
     list_display = (
@@ -24,6 +26,7 @@ class CategoryAdmin(admin.ModelAdmin):
         "friendly_name",
     )
 
+
 class ListingAdmin(admin.ModelAdmin):
     list_display = (
         "title",
@@ -31,6 +34,7 @@ class ListingAdmin(admin.ModelAdmin):
         "category",
         "user"
     )
+
 
 class CommentAdmin(admin.ModelAdmin):
     list_display = (

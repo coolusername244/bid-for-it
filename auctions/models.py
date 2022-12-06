@@ -6,7 +6,6 @@ from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
 
 
-# category select validator
 def category_check(value):
     # 14 = Please Select
     if value == 14:
@@ -75,3 +74,13 @@ class Comment(models.Model):
 
     def __str__(self):
         return f"Listing - {self.listing}. Date - {self.date}"
+
+
+class Wishlist(models.Model):
+    user = models.ForeignKey("User", on_delete=models.CASCADE)
+    listing = models.ForeignKey("Listing", on_delete=models.CASCADE)
+    date_added = models.DateTimeField(auto_now_add=True)
+
+
+    def __str__(self):
+        return f"{self.user} - {self.listing}"

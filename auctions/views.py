@@ -5,8 +5,9 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse
 from django.contrib.auth.decorators import login_required
+from django.db.models import Exists, OuterRef
 
-from .models import User, Listing, Comment
+from .models import User, Listing, Comment, Wishlist
 from .forms import ListingForm, CommentForm
 
 
@@ -24,16 +25,23 @@ def listing(request, listing_id):
     listing = Listing.objects.get(pk=listing_id)
     comment_form = CommentForm()
     comments = Comment.objects.filter(listing=listing_id)
+    wishlist = Listing.objects.filter(
+        Exists(Wishlist.objects.filter(
+            listing_id=OuterRef("id")
+        ))
+    )
 
     context = {
         "listing": listing,
         "comment_form": comment_form,
-        "comments": comments
+        "comments": comments,
+        "wishlist": wishlist
     }
 
     return render(request, "auctions/listing.html", context)
 
 
+@login_required
 def leave_comment(request, listing_id):
     if request.method == "POST":
         form = CommentForm(request.POST)
@@ -51,6 +59,41 @@ def leave_comment(request, listing_id):
             return HttpResponseRedirect(
                 reverse("listing", args=[listing_id])
             )
+
+
+@login_required
+def add_to_wishlist(request, listing_id):
+    instance = Wishlist.objects.create(
+        user = request.user,
+        listing = Listing.objects.get(pk=listing_id)
+    )
+    instance.save()
+    return HttpResponseRedirect(
+        reverse("listing", args=[listing_id])
+    )
+
+@login_required
+def remove_from_wishlist(request, listing_id):
+    Wishlist.objects.filter(
+        user= request.user,
+        listing = Listing.objects.get(pk=listing_id)
+    ).delete()
+    return HttpResponseRedirect(
+        reverse("listing", args=[listing_id])
+    )
+
+
+@login_required
+def wishlist(request):
+    wishlist = Listing.objects.filter(
+        Exists(Wishlist.objects.filter(
+            listing_id=OuterRef("id")
+        ))
+    )
+    context = {
+        "wishlist": wishlist
+    }
+    return render(request, "auctions/wishlist.html", context)
 
 
 @login_required
@@ -80,11 +123,6 @@ def create(request):
             "form": form
         }
         return render(request, "auctions/create.html", context)
-
-
-@login_required
-def wishlist(request):
-    return render(request, "auctions/wishlist.html")
 
 
 def login_view(request):
