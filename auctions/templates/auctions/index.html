@@ -3,13 +3,29 @@
 {% block body %}
     <h2>Active Listings</h2>
     {% for listing in listings %}
-        {{ listing.title }} <br>
-        {{ listing.subtitle }} <br>
-        {{ listing.description }} <br>
-        {{ listing.price }} <br>
-        {{ listing.category.friendly_name }} <br>
-        <img src="{{ listing.image_url }}" alt="{{ listing.title }}" style="height: 10rem"> <br>
-        {{ listing.created }} <br>
-        {{ listing.user }} <br>
-    {% endfor %}
+        <div class="card mb-3">
+            <div class="row g-0">
+                <div class="col-md-4 d-flex justify-content-center my-auto">
+                    <a href="#">
+                        <img src="{{ listing.image_url }}" class="img-fluid listing-image rounded-start" alt="{{ listing.title }}">
+                    </a>
+                </div>
+                <div class="col-md-8">
+                    <div class="card-body">
+                        <i>
+                            <a href="#">
+                                <span class="card-title">{{ listing.title }}</span>
+                            </a>
+                        </i>
+                        <p class="card-text">{{ listing.subtitle }}</p>
+                        <p class="card-text">{{ listing.description|truncatechars:100 }}</p>
+                        <p class="card-text">Current Price <strong>${{ listing.price }}</strong></p>
+                        <p class="card-text"><small class="text-muted">Uploaded: {{ listing.created }}</small></p>
+                    </div>
+                </div>
+            </div>
+          </div>
+        {% empty %}
+            <h3>No listings</h3>
+        {% endfor %}
 {% endblock %}
