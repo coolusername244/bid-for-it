@@ -49,6 +49,45 @@
                 TODO
             </div>
         </div>
+        {% if comments %}
+        <hr>
+        <div class="row">
+            <div class="col-12">
+                <h3>Comments</h3>
+                {% for comment in comments %}
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ comment.user }}</h5>
+                        <h6 class="card-subtitle mb-2 text-muted">{{ comment.date }}</h6>
+                        <p class="card-text">{{ comment.comment }}</p>
+                    </div>
+                  </div>
+                {% endfor %}
+            </div>
+        </div>
+    {% endif %}
+    {% if user.is_authenticated %}
+        <hr>
+        <div class="row">
+            <div class="col-12">
+                <h3 class="mb-3">Leave a comment...</h3>
+                <h5>You are commenting as: {{ request.user }}</h5>
+                <form action="{% url 'leave_comment' listing.id %}" method="post">
+                    {% csrf_token %}
+                    {{ comment_form.comment }}
+                    <button type="submit" class="mb-3 btn btn-primary" name="comment_form">
+                        Leave Comment
+                    </button>
+                </form>
+            </div>
+        </div>
+    {% else %}
+        <div class="row text-center">
+            <div class="col-12">
+                <h5>To leave comments on a listing, you must first sign in or register an account</h5>
+            </div>
+        </div>
+    {% endif %}
     </div>
 </div>
 {% endblock %}

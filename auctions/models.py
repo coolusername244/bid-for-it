@@ -64,4 +64,14 @@ class Listing(models.Model):
     user = models.ForeignKey("User", on_delete=models.CASCADE)
 
     def __str__(self):
-        return f"Item: {self.title} - Seller: {self.user}"
+        return f"ID: {self.id} - Item: {self.title} - Seller: {self.user}"
+
+
+class Comment(models.Model):
+    listing = models.ForeignKey("Listing", on_delete=models.CASCADE)
+    user = models.ForeignKey("User", on_delete=models.CASCADE)
+    comment = models.TextField()
+    date = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Listing - {self.listing}. Date - {self.date}"

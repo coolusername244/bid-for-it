@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Category, Listing, User, Condition
+from .models import Category, Listing, User, Condition, Comment
 
 # Register your models here.
 
@@ -32,8 +32,17 @@ class ListingAdmin(admin.ModelAdmin):
         "user"
     )
 
+class CommentAdmin(admin.ModelAdmin):
+    list_display = (
+        "id",
+        "listing",
+        "user",
+        "date"
+    )
 
+
+admin.site.register(User, UserAdmin)
+admin.site.register(Listing, ListingAdmin)
+admin.site.register(Comment, CommentAdmin)
 admin.site.register(Condition, ConditionAdmin)
 admin.site.register(Category, CategoryAdmin)
-admin.site.register(Listing, ListingAdmin)
-admin.site.register(User, UserAdmin)

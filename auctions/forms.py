@@ -1,6 +1,6 @@
 from django.forms import ModelForm 
 
-from .models import Listing, Category, Condition
+from .models import Listing, Category, Condition, Comment
 
 class ListingForm(ModelForm):
     class Meta:
@@ -30,5 +30,20 @@ class ListingForm(ModelForm):
         self.fields['condition'].choices = friendly_names_condition
 
         # style form fields
+        for field_name, field in self.fields.items():
+            field.widget.attrs['class'] = 'form-control mb-3'
+
+
+class CommentForm(ModelForm):
+    class Meta:
+        model = Comment
+        fields = [
+            "comment"
+        ]
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+         # style form fields
         for field_name, field in self.fields.items():
             field.widget.attrs['class'] = 'form-control mb-3'

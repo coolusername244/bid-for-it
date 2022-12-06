@@ -6,8 +6,8 @@ from django.shortcuts import render
 from django.urls import reverse
 from django.contrib.auth.decorators import login_required
 
-from .models import User, Listing
-from .forms import ListingForm
+from .models import User, Listing, Comment
+from .forms import ListingForm, CommentForm
 
 
 def index(request):
@@ -18,15 +18,40 @@ def index(request):
     }
     return render(request, "auctions/index.html", context)
 
+
 def listing(request, listing_id):
 
     listing = Listing.objects.get(pk=listing_id)
+    comment_form = CommentForm()
+    comments = Comment.objects.filter(listing=listing_id)
 
     context = {
-        "listing": listing
+        "listing": listing,
+        "comment_form": comment_form,
+        "comments": comments
     }
 
     return render(request, "auctions/listing.html", context)
+
+
+def leave_comment(request, listing_id):
+    if request.method == "POST":
+        form = CommentForm(request.POST)
+        listing = Listing.objects.get(pk=listing_id)
+        if form.is_valid():
+            form.instance.user = request.user
+            form.instance.listing = listing
+            form.save()
+            messages.success(request, "You commented on this item")
+            return HttpResponseRedirect(
+                reverse("listing", args=[listing_id])
+            )
+        else:
+            messages.error(request, "Error leaving comment, please try again")
+            return HttpResponseRedirect(
+                reverse("listing", args=[listing_id])
+            )
+
 
 @login_required
 def create(request):
@@ -55,6 +80,7 @@ def create(request):
             "form": form
         }
         return render(request, "auctions/create.html", context)
+
 
 @login_required
 def wishlist(request):
