@@ -15,8 +15,17 @@ def category_check(value):
             params={'value': value},
         )
 
+def condition_check(value):
+    # 1 = Please Select
+    if value == 1:
+        raise ValidationError(
+            _('Please select a condition'),
+            params={'value': value},
+        )
+
 class User(AbstractUser):
     pass
+
 
 class Category(models.Model):
     class Meta:
@@ -31,12 +40,25 @@ class Category(models.Model):
     def get_friendly_name(self):
         return self.friendly_name
 
+
+class Condition(models.Model):
+    name = models.CharField(max_length=254, null=False)
+    friendly_name = models.CharField(max_length=254, null=False)
+
+    def __str__(self):
+        return f"{self.name}"
+    
+    def get_friendly_name(self):
+        return self.friendly_name
+
+
 class Listing(models.Model):
     title = models.CharField(max_length=254)
     subtitle = models.CharField(max_length=254)
     description = models.TextField()
     price = models.DecimalField(decimal_places=2, max_digits=20, validators=[MinValueValidator(1)])
     category = models.ForeignKey("Category", null=True, on_delete=models.SET_NULL, validators=[category_check])
+    condition = models.ForeignKey("Condition", null=True, on_delete=models.SET_NULL, validators=[condition_check])
     image_url = models.URLField()
     created = models.DateTimeField(default=timezone.now, editable=False)
     user = models.ForeignKey("User", on_delete=models.CASCADE)

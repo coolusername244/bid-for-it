@@ -6,14 +6,14 @@
         <div class="card mb-3">
             <div class="row g-0">
                 <div class="col-md-4 d-flex justify-content-center my-auto">
-                    <a href="#">
+                    <a href="{% url 'listing' listing.id %}">
                         <img src="{{ listing.image_url }}" class="img-fluid listing-image rounded-start" alt="{{ listing.title }}">
                     </a>
                 </div>
-                <div class="col-md-8">
+                <div class="col-md-8 my-auto">
                     <div class="card-body">
                         <i>
-                            <a href="#">
+                            <a href="{% url 'listing' listing.id %}">
                                 <span class="card-title">{{ listing.title }}</span>
                             </a>
                         </i>

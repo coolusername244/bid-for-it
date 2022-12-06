@@ -18,6 +18,16 @@ def index(request):
     }
     return render(request, "auctions/index.html", context)
 
+def listing(request, listing_id):
+
+    listing = Listing.objects.get(pk=listing_id)
+
+    context = {
+        "listing": listing
+    }
+
+    return render(request, "auctions/listing.html", context)
+
 @login_required
 def create(request):
     if request.method == "POST":
@@ -34,8 +44,13 @@ def create(request):
             }
             return render(request, "auctions/create.html", context)
     else:
-        # set initial category to "Please Select"
-        form = ListingForm(initial={"category": "14"})
+        # set initial category and condition to "Please Select"
+        form = ListingForm(
+            initial={
+                "category": "14",
+                "condition": "1" 
+            }
+        )
         context = {
             "form": form
         }

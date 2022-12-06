@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Category, Listing, User
+from .models import Category, Listing, User, Condition
 
 # Register your models here.
 
@@ -10,6 +10,12 @@ class UserAdmin(admin.ModelAdmin):
         "username"
     )
 
+class ConditionAdmin(admin.ModelAdmin):
+    list_display = (
+        "id",
+        "name",
+        "friendly_name",
+    )
 
 class CategoryAdmin(admin.ModelAdmin):
     list_display = (
@@ -27,6 +33,7 @@ class ListingAdmin(admin.ModelAdmin):
     )
 
 
+admin.site.register(Condition, ConditionAdmin)
 admin.site.register(Category, CategoryAdmin)
 admin.site.register(Listing, ListingAdmin)
 admin.site.register(User, UserAdmin)

@@ -3,5 +3,7 @@
 }
 
 .listing-image {
-    max-height: 10rem;
+    max-height: 13rem;
+    margin-top: 2rem;
+    margin-bottom: 2rem;
 }
