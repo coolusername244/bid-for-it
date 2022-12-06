@@ -1,10 +1,13 @@
 from django.contrib.auth import authenticate, login, logout
 from django.db import IntegrityError
+from django.contrib import messages
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse
+from django.contrib.auth.decorators import login_required
 
 from .models import User, Listing
+from .forms import ListingForm
 
 
 def index(request):
@@ -15,9 +18,30 @@ def index(request):
     }
     return render(request, "auctions/index.html", context)
 
+@login_required
 def create(request):
-    return render(request, "auctions/create.html")
+    if request.method == "POST":
+        form = ListingForm(request.POST)
+           
+        if form.is_valid():
+            form.instance.user = request.user
+            form.save()
+            messages.success(request, "Item successfully registered!")
+            return HttpResponseRedirect(reverse("index"))
+        else:
+            context = {
+                "form": form
+            }
+            return render(request, "auctions/create.html", context)
+    else:
+        # set initial category to "Please Select"
+        form = ListingForm(initial={"category": "14"})
+        context = {
+            "form": form
+        }
+        return render(request, "auctions/create.html", context)
 
+@login_required
 def wishlist(request):
     return render(request, "auctions/wishlist.html")
 
@@ -35,16 +59,20 @@ def login_view(request):
             login(request, user)
             return HttpResponseRedirect(reverse("index"))
         else:
-            return render(request, "auctions/login.html", {
-                "message": "Invalid username and/or password."
-            })
+            messages.error(request, "Invalid username and/or password")
+            return render(request, "auctions/login.html")
     else:
         return render(request, "auctions/login.html")
 
 
 def logout_view(request):
-    logout(request)
-    return HttpResponseRedirect(reverse("index"))
+    if request.user.is_authenticated:
+        logout(request)
+        messages.success(request, "You have been logged out. See you next time!")
+        return HttpResponseRedirect(reverse("index"))
+    else:
+        messages.success(request, "You were not logged in!")
+        return HttpResponseRedirect(reverse("index"))
 
 
 def register(request):
@@ -56,19 +84,18 @@ def register(request):
         password = request.POST["password"]
         confirmation = request.POST["confirmation"]
         if password != confirmation:
-            return render(request, "auctions/register.html", {
-                "message": "Passwords must match."
-            })
+            messages.error(request, "Passwords must match")
+            return render(request, "auctions/register.html")
 
         # Attempt to create new user
         try:
             user = User.objects.create_user(username, email, password)
             user.save()
         except IntegrityError:
-            return render(request, "auctions/register.html", {
-                "message": "Username already taken."
-            })
+            messages.error(request, "Username already taken")
+            return render(request, "auctions/register.html")
         login(request, user)
+        messages.success(request, f"Account successfully registered! Welcome {user.username}")
         return HttpResponseRedirect(reverse("index"))
     else:
         return render(request, "auctions/register.html")

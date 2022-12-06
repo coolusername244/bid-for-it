@@ -6,6 +6,10 @@
 {% endblock %}
 {% block body %}
 
-    TODO
+    <form action="{% url 'create' %}" method="post">
+        {% csrf_token %}
+        {{ form }}
+        <button class="btn btn-primary mb-3" type="submit">Sell Item!</button>
+    </form>
 
 {% endblock %}

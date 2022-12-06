@@ -1,3 +1,7 @@
-body {
-    padding: 10px;
+.errorlist > li {
+    color: red;
+}
+
+.listing-image {
+    max-height: 10rem;
 }
