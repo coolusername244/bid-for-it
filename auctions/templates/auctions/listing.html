@@ -12,7 +12,16 @@
             <div class="card-body">
                 <h5 class="card-title">{{ listing.title }}</h5>
                 <p class="card-text"><i>{{ listing.subtitle }}</i></p>
-                <p class="card-text">Current Price: <strong>${{ listing.price }}</strong></p>
+                <p class="card-text">
+                    Current Price: 
+                    <strong>$
+                        {% if bids %}
+                            {{ listing.current_price }}
+                        {% else %}
+                            {{ listing.price }}
+                        {% endif %}
+                    </strong>
+                </p>
                 <p class="card-text"><small class="text-muted">Uploaded: {{ listing.created }}</small></p>
                 {% if user.is_authenticated %}
                     {% if listing in wishlist %}
@@ -37,12 +46,18 @@
                 <p>Listed By: {{ listing.user }}</p>
                 <p>Item Condition: {{ listing.condition.get_friendly_name }}</p>
                 <p>Item Category: {{ listing.category.get_friendly_name }}</p>
-                <p>Amount of Bids: TODO </p>
-                <p>Highest Bidder: TODO</p>
+                <p>Amount of Bids: {{ bids|length }}</p>
+                {% if bids %}
+                    <p>Highest Bidder: {{ highest_bid.user }}</p>
+                {% endif %}
             </div>
             <div class="col-md-6">
                 <h3 class="mb-3 text-center">Place Bid</h3>
-                TODO
+                <form action="{% url 'place_bid' listing.id %}" method="post">
+                    {% csrf_token %}
+                    {{ bid_form.bid }}
+                    <button type="submit" class="mb-3 btn btn-primary" name="place_bid">Place Bid</button>
+                </form>
             </div>
         </div>
         {% if comments %}

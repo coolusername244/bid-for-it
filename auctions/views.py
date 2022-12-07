@@ -5,14 +5,20 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse
 from django.contrib.auth.decorators import login_required
-from django.db.models import Exists, OuterRef
+from django.db.models import Exists, OuterRef, Max
 
-from .models import User, Listing, Comment, Wishlist
-from .forms import ListingForm, CommentForm
+from .models import User, Listing, Comment, Wishlist, Bid
+from .forms import ListingForm, CommentForm, BidForm
 
 
 def index(request):
     listings = Listing.objects.all()
+
+    # update current price if deleted in django admin
+    for listing in listings:
+        bids = Bid.objects.filter(listing=listing.id)        
+        if len(bids) == 0 and listing.price != listing.current_price:
+            listing.current_price = listing.price
 
     context = {
         "listings": listings
@@ -23,8 +29,20 @@ def index(request):
 def listing(request, listing_id):
 
     listing = Listing.objects.get(pk=listing_id)
+    
+    # Comments code
     comment_form = CommentForm()
     comments = Comment.objects.filter(listing=listing_id)
+
+    # Bids code
+    bid_form = BidForm()
+    bids = Bid.objects.filter(listing=listing_id)
+    if bids:
+        highest_bid = Bid.objects.filter(listing=listing_id).latest('bid')
+    else:
+        highest_bid = None
+
+    # Wishlist code
     wishlist = Listing.objects.filter(
         Exists(Wishlist.objects.filter(
             listing_id=OuterRef("id")
@@ -35,10 +53,65 @@ def listing(request, listing_id):
         "listing": listing,
         "comment_form": comment_form,
         "comments": comments,
-        "wishlist": wishlist
+        "wishlist": wishlist,
+        "bid_form": bid_form,
+        "bids": bids,
+        "highest_bid": highest_bid
     }
 
     return render(request, "auctions/listing.html", context)
+
+
+@login_required
+def place_bid(request, listing_id):
+    listing = Listing.objects.get(pk=listing_id)
+    bids = Bid.objects.filter(listing=listing_id).count()
+    bid = request.POST["bid"]
+    form = BidForm(request.POST)
+    if bids:
+        highest_bid = Bid.objects.filter(listing=listing_id).latest('bid')
+    else:
+        highest_bid = None
+
+    def update_bids(request):
+        if form.is_valid():
+            form.instance.user = request.user
+            form.instance.listing = listing
+            Listing.objects.filter(pk=listing_id).update(current_price=bid)
+            form.save()
+
+        
+    
+    if not bids:
+        if int(bid) >= int(listing.price):
+            update_bids(request)
+            messages.success(request, "Bid placed successfully!")
+            return HttpResponseRedirect(
+                reverse("listing", args=[listing_id])
+            )
+        else:
+            messages.warning(
+                request, 
+                f"Your bid (${bid}) is lower than the listing price (${listing.price})"
+            )
+            return HttpResponseRedirect(
+                reverse("listing", args=[listing_id])
+            )
+    else:
+        if int(bid) > int(highest_bid.bid):
+            update_bids(request)
+            messages.success(request, "Bid placed successfully!")
+            return HttpResponseRedirect(
+                reverse("listing", args=[listing_id])
+            )
+        else:
+            messages.warning(
+                request, 
+                f"Your bid is lower than the current bid (${highest_bid.bid})"
+            )
+            return HttpResponseRedirect(
+                reverse("listing", args=[listing_id])
+            )
 
 
 @login_required
@@ -72,6 +145,7 @@ def add_to_wishlist(request, listing_id):
         reverse("listing", args=[listing_id])
     )
 
+
 @login_required
 def remove_from_wishlist(request, listing_id):
     Wishlist.objects.filter(
@@ -103,6 +177,7 @@ def create(request):
            
         if form.is_valid():
             form.instance.user = request.user
+            form.instance.current_price = request.POST['price']
             form.save()
             messages.success(request, "Item successfully registered!")
             return HttpResponseRedirect(reverse("index"))

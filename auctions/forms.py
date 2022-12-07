@@ -1,6 +1,6 @@
 from django.forms import ModelForm 
 
-from .models import Listing, Category, Condition, Comment
+from .models import Listing, Category, Condition, Comment, Bid
 
 class ListingForm(ModelForm):
     class Meta:
@@ -39,6 +39,21 @@ class CommentForm(ModelForm):
         model = Comment
         fields = [
             "comment"
+        ]
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+         # style form fields
+        for field_name, field in self.fields.items():
+            field.widget.attrs['class'] = 'form-control mb-3'
+
+
+class BidForm(ModelForm):
+    class Meta:
+        model = Bid
+        fields = [
+            "bid"
         ]
 
     def __init__(self, *args, **kwargs):
