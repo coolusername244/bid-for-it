@@ -5,23 +5,28 @@
 {% block body %}
 <div class="card mb-3 ">
     <div class="row g-0">
-        <div class="col-md-4 ps-3 d-flex justify-content-center">
+        <div class="col-md-5 ps-3 d-flex justify-content-center">
             <img src="{{ listing.image_url }}" class="my-4 img-fluid rounded listing-image" alt="{{ listing.title }}">
         </div>
-        <div class="col-md-8 text-center my-auto">
+        <div class="col-md-7 text-center my-auto">
             <div class="card-body">
                 <h5 class="card-title">{{ listing.title }}</h5>
                 <p class="card-text"><i>{{ listing.subtitle }}</i></p>
-                <p class="card-text">
-                    Current Price: 
-                    <strong>$
-                        {% if bids %}
-                            {{ listing.current_price }}
-                        {% else %}
-                            {{ listing.price }}
-                        {% endif %}
-                    </strong>
-                </p>
+                {% if listing.is_active %}
+                    <p class="card-text">
+                        Current Price: 
+                        <strong>
+                                ${{ listing.current_price }}
+                        </strong>
+                    </p>
+                {% else %}
+                    <p class="card-text">
+                        Winning Bid: <strong>${{ listing.current_price }}</strong>
+                    </p>
+                    <p class="card-text">
+                        Highest Bidder: {{ highest_bid.user }}
+                    </p>
+                {% endif %}
                 <p class="card-text"><small class="text-muted">Uploaded: {{ listing.created }}</small></p>
                 {% if user.is_authenticated %}
                     {% if listing in wishlist %}
@@ -33,72 +38,140 @@
             </div>
         </div>
         <hr>
+        {% if request.user == listing.user %}
+            <div class="row justify-content-around text-center">
+                <div class="col-12">
+                    {% if listing.is_active %}
+                        <h3>Admin Panel (Only you can see this)</h3>
+                        <a href="{% url 'close_listing' listing.id %}">
+                            <button class="btn btn-primary mb-3">
+                                Close Listing
+                            </button>
+                        </a>
+                        <a href="{% url 'delete_listing' listing.id %}">
+                            <button class="btn btn-danger mb-3">
+                                Delete Listing
+                            </button>
+                        </a>
+                    {% else %}
+                        <h3>Admin Panel (Only you can see this)</h3>
+                        <h5>This listing is now closed</h5>
+                        {% if bids %}
+                            <p>Highest Bidder: {{ highest_bid.user }} </p>
+                            <p>Highest Bid: ${{ highest_bid.bid }}</p>
+                        {% else %}
+                            <p>No one placed any bids on your item</p>
+                            <p>Would you like to try and sell the item again?</p>
+                            <a href="{% url 'relist_listing' listing.id %}">
+                                <button class="btn btn-primary mb-3">
+                                    Relist Item
+                                </button>
+                            </a>
+                        {% endif %}
+                    {% endif %}
+                </div>
+                <hr>        
+            </div>
+        {% endif %}
+        {% if request.user == highest_bid.user and not listing.is_active %}
+        <div class="row justify-content-center text-center">
+            <div class="col-12">
+                <h2>You have won this item!</h2>
+            </div>
+            <hr>
+        </div>
+        {% endif %}
         <div class="row justify-content-around text-center">
             <div class="col-md-8">
-                <h3 class="">Item Description</h3>
+                <h3>Item Description</h3>
                 <p class="card-text my-3">{{ listing.description }}</p>
             </div>
         </div>
-        <hr>
-        <div class="row">
-            <div class="col-md-6 text-center">
-                <h3 class="mb-3">Item Details</h3>
-                <p>Listed By: {{ listing.user }}</p>
-                <p>Item Condition: {{ listing.condition.get_friendly_name }}</p>
-                <p>Item Category: {{ listing.category.get_friendly_name }}</p>
-                <p>Amount of Bids: {{ bids|length }}</p>
-                {% if bids %}
-                    <p>Highest Bidder: {{ highest_bid.user }}</p>
-                {% endif %}
+        {% if listing.is_active %}
+            <!-- bid details and place bid -->
+            <hr>
+            <div class="row">
+                <div class="col-md-6 text-center">
+                    <h3 class="mb-3">Item Details</h3>
+                    <p>Listed By: {{ listing.user }}</p>
+                    <p>Item Condition: {{ listing.condition.get_friendly_name }}</p>
+                    <p>Item Category: {{ listing.category.get_friendly_name }}</p>
+                    <p>Amount of Bids: {{ bids|length }}</p>
+                    {% if bids %}
+                        <p>Highest Bidder: {{ highest_bid.user }}</p>
+                    {% endif %}
+                </div>
+                <div class="col-md-6">
+                    <h3 class="mb-3 text-center">Place Bid</h3>
+                    <form action="{% url 'place_bid' listing.id %}" method="post">
+                        {% csrf_token %}
+                        {{ bid_form.bid }}
+                        <button type="submit" class="mb-3 btn btn-primary" name="place_bid">Place Bid</button>
+                    </form>
+                </div>
             </div>
-            <div class="col-md-6">
-                <h3 class="mb-3 text-center">Place Bid</h3>
-                <form action="{% url 'place_bid' listing.id %}" method="post">
-                    {% csrf_token %}
-                    {{ bid_form.bid }}
-                    <button type="submit" class="mb-3 btn btn-primary" name="place_bid">Place Bid</button>
-                </form>
-            </div>
-        </div>
-        {% if comments %}
-        <hr>
-        <div class="row">
-            <div class="col-12">
-                <h3>Comments</h3>
-                {% for comment in comments %}
-                <div class="card mb-3">
-                    <div class="card-body">
-                        <h5 class="card-title">{{ comment.user }}</h5>
-                        <h6 class="card-subtitle mb-2 text-muted">{{ comment.date }}</h6>
-                        <p class="card-text">{{ comment.comment }}</p>
+            {% if comments %}
+                <!-- Comments section -->
+                <hr>
+                <div class="row">
+                    <div class="col-12">
+                        <h3>Comments</h3>
+                        {% for comment in comments %}
+                        <div class="card mb-3">
+                            <div class="card-body">
+                                <h5 class="card-title">{{ comment.user }}</h5>
+                                <h6 class="card-subtitle mb-2 text-muted">{{ comment.date }}</h6>
+                                <p class="card-text">{{ comment.comment }}</p>
+                            </div>
+                        </div>
+                        {% endfor %}
                     </div>
-                  </div>
-                {% endfor %}
-            </div>
-        </div>
-    {% endif %}
-    {% if user.is_authenticated %}
-        <hr>
-        <div class="row">
-            <div class="col-12">
-                <h3 class="mb-3">Leave a comment...</h3>
-                <h5>You are commenting as: {{ request.user }}</h5>
-                <form action="{% url 'leave_comment' listing.id %}" method="post">
-                    {% csrf_token %}
-                    {{ comment_form.comment }}
-                    <button type="submit" class="mb-3 btn btn-primary" name="comment_form">
-                        Leave Comment
-                    </button>
-                </form>
-            </div>
-        </div>
-    {% else %}
-        <div class="row text-center">
-            <div class="col-12">
-                <h5>To leave comments on a listing, you must first sign in or register an account</h5>
-            </div>
-        </div>
-    {% endif %}
+                </div>
+            {% endif %}
+            {% if user.is_authenticated %}
+                <!-- Leave a comment section -->
+                <hr>
+                <div class="row">
+                    <div class="col-12">
+                        <h3 class="mb-3">Leave a comment...</h3>
+                        <h5>You are commenting as: {{ request.user }}</h5>
+                        <form action="{% url 'leave_comment' listing.id %}" method="post">
+                            {% csrf_token %}
+                            {{ comment_form.comment }}
+                            <button type="submit" class="mb-3 btn btn-primary" name="comment_form">
+                                Leave Comment
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            {% else %}
+                <!-- Sign in to leave a comment section -->
+                <div class="row text-center">
+                    <div class="col-12">
+                        <h5>To leave comments on a listing, you must first sign in or register an account</h5>
+                    </div>
+                </div>
+            {% endif %}
+        {% else %}
+            <!-- Comments section on closed listing -->
+            {% if comments %}
+                <hr>
+                <div class="row">
+                    <div class="col-12">
+                        <h3>Comments</h3>
+                        {% for comment in comments %}
+                        <div class="card mb-3">
+                            <div class="card-body">
+                                <h5 class="card-title">{{ comment.user }}</h5>
+                                <h6 class="card-subtitle mb-2 text-muted">{{ comment.date }}</h6>
+                                <p class="card-text">{{ comment.comment }}</p>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endif %}
+        {% endif %}
     </div>
 </div>
 {% endblock %}

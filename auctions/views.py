@@ -5,7 +5,7 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse
 from django.contrib.auth.decorators import login_required
-from django.db.models import Exists, OuterRef, Max
+from django.db.models import Exists, OuterRef
 
 from .models import User, Listing, Comment, Wishlist, Bid
 from .forms import ListingForm, CommentForm, BidForm
@@ -14,11 +14,14 @@ from .forms import ListingForm, CommentForm, BidForm
 def index(request):
     listings = Listing.objects.all()
 
-    # update current price if deleted in django admin
+    # update current price if bid deleted in django admin
     for listing in listings:
-        bids = Bid.objects.filter(listing=listing.id)        
-        if len(bids) == 0 and listing.price != listing.current_price:
-            listing.current_price = listing.price
+        bids = Bid.objects.filter(listing=listing.id)   
+        if bids:
+            highest_bid = Bid.objects.filter(listing=listing.id).latest('bid')
+            Listing.objects.filter(pk=listing.id).update(current_price=highest_bid.bid)
+        else:
+            Listing.objects.filter(pk=listing.id).update(current_price=listing.price)
 
     context = {
         "listings": listings
@@ -60,6 +63,41 @@ def listing(request, listing_id):
     }
 
     return render(request, "auctions/listing.html", context)
+
+
+def closed_listings(request):
+    listings = Listing.objects.exclude(is_active=True)
+    
+    context = {
+        "listings": listings
+    }
+    return render(request, "auctions/closed_listings.html", context)
+
+
+@login_required
+def close_listing(request, listing_id):
+    Listing.objects.filter(pk=listing_id).update(is_active=False)
+    messages.info(request, "Listing closed, no more bids will be accepted")
+    return HttpResponseRedirect(
+        reverse("listing", args=[listing_id])
+    )
+
+
+@login_required
+def relist_listing(request, listing_id):
+    Listing.objects.filter(pk=listing_id).update(is_active=True)
+    messages.info(request, "Listing re-opened, maybe a different description or starting price could help sell your item?")
+    return HttpResponseRedirect(
+        reverse("listing", args=[listing_id])
+    )
+
+
+@login_required
+def delete_listing(request, listing_id):
+    Listing.objects.filter(pk=listing_id).delete()
+    return HttpResponseRedirect(
+        reverse("index")
+    )
 
 
 @login_required

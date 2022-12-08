@@ -52,6 +52,7 @@ class Condition(models.Model):
 
 
 class Listing(models.Model):
+    is_active = models.BooleanField(default=True, null=False)
     title = models.CharField(max_length=254)
     subtitle = models.CharField(max_length=254)
     description = models.TextField()

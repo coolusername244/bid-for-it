@@ -30,6 +30,7 @@ class CategoryAdmin(admin.ModelAdmin):
 class ListingAdmin(admin.ModelAdmin):
     list_display = (
         "title",
+        "is_active",
         "price",
         "current_price",
         "category",

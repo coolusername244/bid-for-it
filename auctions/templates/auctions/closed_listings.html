@@ -1,10 +1,14 @@
 {% extends "auctions/layout.html" %}
+{% block title %}
 
+    Closed Listings
+
+{% endblock %}
 {% block body %}
-    <h2>Active Listings</h2>
+    <h2>Closed Listings</h2>
     <hr>
     {% for listing in listings %}
-        {% if listing.is_active %}
+        {% if not listing.is_active %}
             <div class="card mb-3">
                 <div class="row g-0">
                     <div class="col-md-4 d-flex justify-content-center my-auto">
@@ -21,14 +25,12 @@
                             </i>
                             <p class="card-text">{{ listing.subtitle }}</p>
                             <p class="card-text">{{ listing.description|truncatechars:100 }}</p>
-                            <p class="card-text">Current Price: <strong>${{ listing.current_price }}</strong></p>
+                            <p class="card-text">Sold for: <strong>${{ listing.current_price }}</strong></p>
                             <p class="card-text"><small class="text-muted">Uploaded: {{ listing.created }}</small></p>
                         </div>
                     </div>
                 </div>
             </div>
         {% endif %}
-    {% empty %}
-        <h3>No listings</h3>
     {% endfor %}
 {% endblock %}
