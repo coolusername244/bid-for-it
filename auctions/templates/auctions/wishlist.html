@@ -6,28 +6,28 @@
 <h2>Your Wishlist</h2>
 <hr>
     {% for listing in wishlist %}
-        <div class="card mb-3">
-            <div class="row g-0">
-                <div class="col-md-4 my-auto">
-                    <a href="{% url 'listing' listing.id %}">
-                        <img src="{{ listing.image_url }}" class="img-fluid rounded-start" alt="{{ listing.title }}">
-                    </a>
-                </div>
-                <div class="col-md-8">
-                    <div class="card-body">
-                        <i>
-                            <a href="{% url 'listing' listing.id %}">
-                                <h5 class="card-title">{{ listing.title }}</h5>
-                            </a>
-                        </i>
-                        <p class="card-text">{{ listing.subtitle }}</p>
-                        <p class="card-text">{{ listing.description|truncatechars:100 }}</p>
-                        <p class="card-text">Current Price <strong>${{ listing.price }}</strong></p>
-                        <p class="card-text"><small class="text-muted">Uploaded: {{ listing.created }}</small></p>
-                    </div>
+    <div class="card mb-3">
+        <div class="row g-0">
+            <div class="col-md-4 d-flex justify-content-center my-auto">
+                <a href="{% url 'listing' listing.id %}">
+                    <img src="{{ listing.image_url }}" class="img-fluid listing-image rounded-start" alt="{{ listing.title }}">
+                </a>
+            </div>
+            <div class="col-md-8 my-auto">
+                <div class="card-body">
+                    <i>
+                        <a href="{% url 'listing' listing.id %}">
+                            <h5 class="card-title">{{ listing.title }}</h5>
+                        </a>
+                    </i>
+                    <p class="card-text">{{ listing.subtitle }}</p>
+                    <p class="card-text">{{ listing.description|truncatechars:100 }}</p>
+                    <p class="card-text">Current Price: <strong>${{ listing.current_price }}</strong></p>
+                    <p class="card-text"><small class="text-muted">Uploaded: {{ listing.created }}</small></p>
                 </div>
             </div>
         </div>
+    </div>
     {% empty %}
         <h1>You have no items in your wish list</h1>
         <h4><a href="{% url 'index' %}">Start Shopping!</a></h4>

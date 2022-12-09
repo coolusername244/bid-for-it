@@ -19,7 +19,6 @@ urlpatterns = [
     path("listing/<int:listing_id>/place_bid", views.place_bid, name="place_bid"),
     path("listing/<int:listing_id>/close_listing", views.close_listing, name="close_listing"),
     path("listing/<int:listing_id>delete_listing", views.delete_listing, name="delete_listing"),
-    path("listing/<int:listing_id>relist_listing", views.relist_listing, name="relist_listing"),
     
     # wishlist urls
     path("wishlist", views.wishlist, name="wishlist"),

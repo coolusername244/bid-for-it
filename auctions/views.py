@@ -7,12 +7,22 @@ from django.urls import reverse
 from django.contrib.auth.decorators import login_required
 from django.db.models import Exists, OuterRef
 
-from .models import User, Listing, Comment, Wishlist, Bid
+from .models import User, Listing, Comment, Wishlist, Bid, Category
 from .forms import ListingForm, CommentForm, BidForm
 
 
 def index(request):
-    listings = Listing.objects.all()
+
+    category = None
+    category_friendly = None
+    wishlist = None
+
+    if 'category' in request.GET:
+        category = request.GET["category"]
+        listings = Listing.objects.filter(category__name=category)
+        category_friendly = Category.objects.get(name=category).get_friendly_name()
+    else:
+        listings = Listing.objects.all()
 
     # update current price if bid deleted in django admin
     for listing in listings:
@@ -24,9 +34,21 @@ def index(request):
             Listing.objects.filter(pk=listing.id).update(current_price=listing.price)
 
     context = {
+        "category": category_friendly,
+        "listings": listings,
+    }
+    return render(request, "auctions/index.html", context)
+
+
+def view_category(request, category_id):
+    listings = Listing.objects.all()
+    print(listings)
+    print(category_id)
+    context = {
         "listings": listings
     }
     return render(request, "auctions/index.html", context)
+
 
 
 def listing(request, listing_id):
@@ -78,15 +100,6 @@ def closed_listings(request):
 def close_listing(request, listing_id):
     Listing.objects.filter(pk=listing_id).update(is_active=False)
     messages.info(request, "Listing closed, no more bids will be accepted")
-    return HttpResponseRedirect(
-        reverse("listing", args=[listing_id])
-    )
-
-
-@login_required
-def relist_listing(request, listing_id):
-    Listing.objects.filter(pk=listing_id).update(is_active=True)
-    messages.info(request, "Listing re-opened, maybe a different description or starting price could help sell your item?")
     return HttpResponseRedirect(
         reverse("listing", args=[listing_id])
     )

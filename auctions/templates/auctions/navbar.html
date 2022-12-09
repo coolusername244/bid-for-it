@@ -17,9 +17,11 @@
                         Shop By Category
                     </a>
                     <ul class="dropdown-menu">
-                        <li>
-                            <a class="dropdown-item" href="#">TODO - Categories</a>
-                        </li>
+                        {% for category in category_dropdown %}
+                            <li>
+                                <a class="dropdown-item" href="{% url 'index' %}?category={{ category.name }}">{{ category.get_friendly_name }}</a>
+                            </li>
+                        {% endfor %}
                     </ul>
                 </li>
                 {% if user.is_authenticated %}
