@@ -69,6 +69,7 @@ TEMPLATES = [
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
+                # Allows navbar categories to be displayed sitewide
                 'auctions.context_processors.navbar_categories',
                 'django.template.context_processors.debug',
                 'django.template.context_processors.request',

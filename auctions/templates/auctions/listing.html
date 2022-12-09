@@ -14,19 +14,10 @@
                 <h5 class="card-title">{{ listing.title }}</h5>
                 <p class="card-text"><i>{{ listing.subtitle }}</i></p>
                 {% if listing.is_active %}
-                    <p class="card-text">
-                        Current Price: 
-                        <strong>
-                                ${{ listing.current_price }}
-                        </strong>
-                    </p>
+                    <p class="card-text">Current Price: <strong>${{ listing.current_price }}</strong></p>
                 {% else %}
-                    <p class="card-text">
-                        Winning Bid: <strong>${{ listing.current_price }}</strong>
-                    </p>
-                    <p class="card-text">
-                        Highest Bidder: {{ highest_bid.user }}
-                    </p>
+                    <p class="card-text">Winning Bid: <strong>${{ listing.current_price }}</strong></p>
+                    <p class="card-text">Highest Bidder: <strong>{{ highest_bid.user }}</strong></p>
                 {% endif %}
                 <p class="card-text"><small class="text-muted">Uploaded: {{ listing.created }}</small></p>
                 {% if not request.user == listing.user and user.is_authenticated and listing.is_active %}

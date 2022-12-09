@@ -3,11 +3,6 @@
 {% block body %}
 
     <h2>Register</h2>
-
-    {% if message %}
-        <div>{{ message }}</div>
-    {% endif %}
-
     <div class="card text-center">
         <div class="card-body">
             <form class="auth-form" action="{% url 'register' %}" method="post">

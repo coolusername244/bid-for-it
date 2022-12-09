@@ -1,7 +1,7 @@
 from django.contrib.auth import authenticate, login, logout
 from django.db import IntegrityError
 from django.contrib import messages
-from django.http import HttpResponse, HttpResponseRedirect
+from django.http import HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse
 from django.contrib.auth.decorators import login_required
@@ -15,12 +15,13 @@ def index(request):
 
     category = None
     category_friendly = None
-    wishlist = None
 
+    # check if user has selected a category to view
     if 'category' in request.GET:
         category = request.GET["category"]
         listings = Listing.objects.filter(category__name=category)
         category_friendly = Category.objects.get(name=category).get_friendly_name()
+    # if not, return all listings
     else:
         listings = Listing.objects.all()
 
@@ -40,26 +41,16 @@ def index(request):
     return render(request, "auctions/index.html", context)
 
 
-def view_category(request, category_id):
-    listings = Listing.objects.all()
-    print(listings)
-    print(category_id)
-    context = {
-        "listings": listings
-    }
-    return render(request, "auctions/index.html", context)
-
-
-
 def listing(request, listing_id):
 
+    # Get selected listing
     listing = Listing.objects.get(pk=listing_id)
     
-    # Comments code
+    # Supply comment form and get any existing comments
     comment_form = CommentForm()
     comments = Comment.objects.filter(listing=listing_id)
 
-    # Bids code
+    # Supply bid form and any bids for the current listing
     bid_form = BidForm()
     bids = Bid.objects.filter(listing=listing_id)
     if bids:
@@ -67,7 +58,7 @@ def listing(request, listing_id):
     else:
         highest_bid = None
 
-    # Wishlist code
+    # Check if listing is in users wishlist
     wishlist = Listing.objects.filter(
         Exists(Wishlist.objects.filter(
             listing_id=OuterRef("id")
@@ -88,6 +79,8 @@ def listing(request, listing_id):
 
 
 def closed_listings(request):
+
+    # Get all listings that are not active
     listings = Listing.objects.exclude(is_active=True)
     
     context = {
@@ -98,6 +91,8 @@ def closed_listings(request):
 
 @login_required
 def close_listing(request, listing_id):
+
+    # Update listing active status
     Listing.objects.filter(pk=listing_id).update(is_active=False)
     messages.info(request, "Listing closed, no more bids will be accepted")
     return HttpResponseRedirect(
@@ -107,7 +102,10 @@ def close_listing(request, listing_id):
 
 @login_required
 def delete_listing(request, listing_id):
+
+    # Delete listing from database and return user to all listings
     Listing.objects.filter(pk=listing_id).delete()
+    messages.success(request, "Your listing has been deleted")
     return HttpResponseRedirect(
         reverse("index")
     )
@@ -115,6 +113,8 @@ def delete_listing(request, listing_id):
 
 @login_required
 def place_bid(request, listing_id):
+
+    # Get current listing and check for bids
     listing = Listing.objects.get(pk=listing_id)
     bids = Bid.objects.filter(listing=listing_id).count()
     bid = request.POST["bid"]
@@ -124,15 +124,15 @@ def place_bid(request, listing_id):
     else:
         highest_bid = None
 
+    # function to update the highest bid on listing
     def update_bids(request):
         if form.is_valid():
             form.instance.user = request.user
             form.instance.listing = listing
             Listing.objects.filter(pk=listing_id).update(current_price=bid)
             form.save()
-
-        
     
+    # if there are no bids, check bid is higher than listing price
     if not bids:
         if int(bid) >= int(listing.price):
             update_bids(request)
@@ -148,6 +148,7 @@ def place_bid(request, listing_id):
             return HttpResponseRedirect(
                 reverse("listing", args=[listing_id])
             )
+    # if there are bids, check users bid is higher than current highest
     else:
         if int(bid) > int(highest_bid.bid):
             update_bids(request)
@@ -187,6 +188,8 @@ def leave_comment(request, listing_id):
 
 @login_required
 def add_to_wishlist(request, listing_id):
+
+    # Create instance for database and save to users wishlist
     instance = Wishlist.objects.create(
         user = request.user,
         listing = Listing.objects.get(pk=listing_id)
@@ -199,6 +202,8 @@ def add_to_wishlist(request, listing_id):
 
 @login_required
 def remove_from_wishlist(request, listing_id):
+
+    # Get listing from users wishlist and delete
     Wishlist.objects.filter(
         user= request.user,
         listing = Listing.objects.get(pk=listing_id)
@@ -210,6 +215,8 @@ def remove_from_wishlist(request, listing_id):
 
 @login_required
 def wishlist(request):
+
+    # Get all listings in the users wishlist and present
     wishlist = Listing.objects.filter(
         Exists(Wishlist.objects.filter(
             listing_id=OuterRef("id")
@@ -223,6 +230,8 @@ def wishlist(request):
 
 @login_required
 def create(request):
+
+    # Get form data, chcek and create database instance if valid
     if request.method == "POST":
         form = ListingForm(request.POST)
            
@@ -232,11 +241,16 @@ def create(request):
             form.save()
             messages.success(request, "Item successfully registered!")
             return HttpResponseRedirect(reverse("index"))
+        
+        # return form to user to correct if not valid
+        # custom checks have been created in models.py
         else:
             context = {
                 "form": form
             }
             return render(request, "auctions/create.html", context)
+    
+    # Present user with the listing form
     else:
         # set initial category and condition to "Please Select"
         form = ListingForm(

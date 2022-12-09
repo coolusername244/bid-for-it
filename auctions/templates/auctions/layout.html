@@ -11,22 +11,23 @@
     <body>
         {% include "auctions/navbar.html" %}
         {% if messages %}
-                <div class="messages text-center">
-                    {% for message in messages %}
+            <div class="messages text-center">
+                {% for message in messages %}
+                <!-- Messages that will change color based on class provided in views.py -->
                     <div 
                         {% if message.tags %}
                             class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert"
                         {% endif %}>
-                        {{ message}}
+                        {{ message }}
                         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                      </div>
-                    {% endfor %}
                     </div>
-            {% endif %}
+                {% endfor %}
+            </div>
+        {% endif %}
         <main class="container-fluid">
             <div class="container mt-3">
-            {% block body %}
-            {% endblock %}
+                {% block body %}
+                {% endblock %}
             </div>
         </main>
         <!-- JavaScript Bundle with Popper -->
